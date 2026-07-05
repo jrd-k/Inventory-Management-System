@@ -23,3 +23,25 @@ def fetch_by_barcode(barcode: str) -> dict:
         raise ExternalAPIError(f"No product found for barcode '{barcode}'")
 
     return _to_inventory_fields(data["product"], barcode=barcode)
+
+
+
+def fetch_by_name(name: str) -> dict:
+    """Search for a product by name and return the best (first) match."""
+    url = f"{BASE_URL}/cgi/search.pl"
+    params = {
+        "search_terms": name,
+        "search_simple": 1,
+        "action": "process",
+        "json": 1,
+        "page_size": 1,
+    }
+    response = requests.get(url, params=params, headers=HEADERS, timeout=TIMEOUT)
+    response.raise_for_status()
+    data = response.json()
+
+    products = data.get("products", [])
+    if not products:
+        raise ExternalAPIError(f"No product found matching name '{name}'")
+
+    return _to_inventory_fields(products[0])

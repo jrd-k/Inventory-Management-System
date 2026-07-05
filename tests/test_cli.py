@@ -54,5 +54,26 @@ class CliViewTestCase(unittest.TestCase):
     def test_view_missing_item(self, mock_get):
         mock_get.return_value = _mock_response(404, {"error": "not found"})
         args = argparse.Namespace(id=999, name=None)
-        # should not raise - cli handles the 404 gracefully
         cli.cmd_view(args)
+
+
+class CliUpdateTestCase(unittest.TestCase):
+    @patch("cli.requests.patch")
+    def test_update_price_and_quantity(self, mock_patch):
+        mock_patch.return_value = _mock_response(200, {
+            "id": 1, "product_name": "Widget", "quantity": 3, "price": 150,
+            "barcode": None, "source": "manual",
+        })
+        args = argparse.Namespace(id=1, name=None, quantity=3, price=150)
+        cli.cmd_update(args)
+
+        mock_patch.assert_called_once()
+        _, kwargs = mock_patch.call_args
+        self.assertEqual(kwargs["json"], {"quantity": 3, "price": 150})
+
+    @patch("cli.requests.patch")
+    def test_update_with_no_fields_does_not_call_api(self, mock_patch):
+        args = argparse.Namespace(id=1, name=None, quantity=None, price=None)
+        cli.cmd_update(args)
+        mock_patch.assert_not_called()
+

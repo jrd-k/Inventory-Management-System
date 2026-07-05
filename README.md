@@ -31,7 +31,7 @@ inventory-management-system/
 
 ```bash
 # 1. Clone and enter the repo
-git clone <your-repo-url>
+git clone https://github.com/jrd-k/Inventory-Management-System
 cd inventory-management-system
 
 # 2. Create a virtual environment
@@ -111,14 +111,3 @@ Test suites, matching each feature built:
 All external HTTP calls are mocked, so the full suite runs offline and doesn't
 depend on OpenFoodFacts being reachable.
 
-## Git Workflow Used for This Project
-
-This project was developed using a feature-branch workflow:
-
-1. `main` — kept stable throughout.
-2. Feature branches created off `main` for each major piece of work:
-   - `feature/database` — in-memory array + CRUD helper functions
-   - `feature/api-routes` — Flask routes and RESTful endpoints
-   - `feature/external-api` — OpenFoodFacts integration
-   - `feature/cli` — the CLI client
-   - `feature/tests` — the three test suites

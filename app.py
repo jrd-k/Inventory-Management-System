@@ -8,28 +8,27 @@ app = Flask(__name__)
 @app.route("/", methods=["GET"])
 def index():
     return jsonify({
-        "message":"Inventory Management System API"
-        "endpoints":{
+        "message": "Inventory Management System API",
+        "endpoints": {
             "GET /inventory": "list all items",
-            "GET /inentory/<id>"": "get one item",
-            "POST /inentory": "crete an item",
-            "PATCH /inventory/<id>":"update an item",
-            "DELETE /inventory/<id>":"delete an item",
+            "GET /inventory/<id>": "get one item",
+            "POST /inventory": "create an item",
+            "PATCH /inventory/<id>": "update an item",
+            "DELETE /inventory/<id>": "delete an item",
             "GET /inventory/search?name=<name>": "search items by name",
             "GET /inventory/external?barcode=<code> or ?name=<name>": "preview a product from OpenFoodFacts",
-            "POST /inventory/external":"fetch a product from OpenFoodFacts and add it to inventory",
+            "POST /inventory/external": "fetch a product from OpenFoodFacts and add it to inventory",
         }
     })
 
 
-
-@app.route("/inventory",methods=[POST])
+@app.route("/inventory", methods=["POST"])
 def create_item():
     payload = request.get_json(silent=True) or {}
 
     if not payload.get("product_name"):
         return jsonify({"error": "'product_name' is required"}), 400
-    
+
     item = database.add_item(payload)
     return jsonify(item), 201
 
@@ -43,15 +42,15 @@ def get_items():
 def get_item(item_id):
     item = database.get_item(item_id)
     if item is None:
-        return jsonify({"error": f"Item{item_id} not found"}), 404
+        return jsonify({"error": f"Item {item_id} not found"}), 404
     return jsonify(item), 200
 
 
 @app.route("/inventory/search", methods=["GET"])
 def search_items():
-    name = request.args.get("name","").strip()
+    name = request.args.get("name", "").strip()
     if not name:
-        return jsonify(database.search_items(name)), 400
+        return jsonify({"error": "'name' query parameter is required"}), 400
     return jsonify(database.search_items(name)), 200
 
 
@@ -66,6 +65,7 @@ def update_item(item_id):
 
 @app.route("/inventory/<int:item_id>", methods=["DELETE"])
 def delete_item(item_id):
+    deleted = database.delete_item(item_id)
     if not deleted:
         return jsonify({"error": f"Item {item_id} not found"}), 404
     return jsonify({"message": f"Item {item_id} deleted"}), 200
@@ -87,7 +87,6 @@ def preview_external_product():
         return jsonify({"error": f"External API request failed: {exc}"}), 502
 
     return jsonify(data), 200
-
 
 
 @app.route("/inventory/external", methods=["POST"])

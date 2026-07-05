@@ -53,7 +53,7 @@ class ApiEndpointTestCase(unittest.TestCase):
         resp = self.client.get("/inventory/999")
         self.assertEqual(resp.status_code, 404)
 
-
+    
     def test_search_items_by_name(self):
         self._create_sample_item()
         resp = self.client.get("/inventory/search", query_string={"name": "wid"})
@@ -64,4 +64,15 @@ class ApiEndpointTestCase(unittest.TestCase):
         resp = self.client.get("/inventory/search")
         self.assertEqual(resp.status_code, 400)
 
-       
+    def test_update_item_price_and_quantity(self):
+        created = self._create_sample_item().get_json()
+        resp = self.client.patch(f"/inventory/{created['id']}", json={"price": 150, "quantity": 3})
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertEqual(data["price"], 150)
+        self.assertEqual(data["quantity"], 3)
+        self.assertEqual(data["product_name"], "Widget")
+
+    def test_update_missing_item_returns_404(self):
+        resp = self.client.patch("/inventory/999", json={"quantity": 5})
+        self.assertEqual(resp.status_code, 404)

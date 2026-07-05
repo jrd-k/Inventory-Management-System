@@ -36,3 +36,60 @@ def cmd_add(args):
         return
     print("Added:")
     _print_item(resp.json())
+
+
+
+@_handle_connection_error
+def cmd_view(args):
+    if args.id is not None:
+        resp = requests.get(f"{API_BASE}/{args.id}")
+        if resp.status_code == 404:
+            print(f"Item {args.id} not found.")
+            return
+        resp.raise_for_status()
+        _print_item(resp.json())
+        return
+
+    if args.name:
+        resp = requests.get(f"{API_BASE}/search", params={"name": args.name})
+        resp.raise_for_status()
+        items = resp.json()
+        if not items:
+            print("No matches.")
+            return
+        for item in items:
+            _print_item(item)
+        return
+
+    resp = requests.get(API_BASE)
+    resp.raise_for_status()
+    items = resp.json()
+    if not items:
+        print("No inventory items found.")
+        return
+    for item in items:
+        _print_item(item)
+
+
+
+@_handle_connection_error
+def cmd_update(args):
+    payload = {}
+    if args.name is not None:
+        payload["product_name"] = args.name
+    if args.quantity is not None:
+        payload["quantity"] = args.quantity
+    if args.price is not None:
+        payload["price"] = args.price
+
+    if not payload:
+        print("Nothing to update - provide at least one of --name, --quantity, --price.")
+        return
+
+    resp = requests.patch(f"{API_BASE}/{args.id}", json=payload)
+    if resp.status_code == 404:
+        print(f"Item {args.id} not found.")
+        return
+    resp.raise_for_status()
+    print("Updated:")
+    _print_item(resp.json())

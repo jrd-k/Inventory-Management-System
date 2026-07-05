@@ -45,3 +45,16 @@ def fetch_by_name(name: str) -> dict:
         raise ExternalAPIError(f"No product found matching name '{name}'")
 
     return _to_inventory_fields(products[0])
+
+
+def _to_inventory_fields(product: dict, barcode: str = None) -> dict:
+    """Map OpenFoodFacts' product schema onto our inventory item fields."""
+    return {
+        "product_name": product.get("product_name") or "Unknown product",
+        "brands": product.get("brands"),
+        "ingredients_text": product.get("ingredients_text"),
+        "barcode": barcode or product.get("code"),
+        "category": (product.get("categories") or "").split(",")[0].strip() or None,
+        "image_url": product.get("image_front_url") or product.get("image_url"),
+        "source": "openfoodfacts",
+    }

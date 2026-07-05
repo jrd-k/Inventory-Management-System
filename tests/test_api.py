@@ -17,7 +17,7 @@ class ApiEndpointTestCase(unittest.TestCase):
             "barcode": "1234567890",
         })
 
-    # ---- POST /inventory ----
+    #POST
     def test_create_item(self):
         resp = self._create_sample_item()
         self.assertEqual(resp.status_code, 201)
@@ -29,3 +29,6 @@ class ApiEndpointTestCase(unittest.TestCase):
     def test_create_item_requires_product_name(self):
         resp = self.client.post("/inventory", json={"quantity": 5})
         self.assertEqual(resp.status_code, 400)
+
+        
+       

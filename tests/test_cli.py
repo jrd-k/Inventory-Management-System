@@ -76,6 +76,7 @@ class CliUpdateTestCase(unittest.TestCase):
         args = argparse.Namespace(id=1, name=None, quantity=None, price=None)
         cli.cmd_update(args)
         mock_patch.assert_not_called()
+        
 
 class CliDeleteTestCase(unittest.TestCase):
     @patch("cli.requests.delete")
@@ -84,3 +85,40 @@ class CliDeleteTestCase(unittest.TestCase):
         args = argparse.Namespace(id=1)
         cli.cmd_delete(args)
         mock_delete.assert_called_once_with(f"{cli.API_BASE}/1")
+
+
+class CliFindTestCase(unittest.TestCase):
+    @patch("cli.requests.get")
+    def test_find_preview_only(self, mock_get):
+        mock_get.return_value = _mock_response(200, {
+            "product_name": "Nutella", "barcode": "3017620422003", "source": "openfoodfacts",
+        })
+        args = argparse.Namespace(barcode="3017620422003", name=None, add=False,
+                                   quantity=0, price=0.0)
+        cli.cmd_find(args)
+        mock_get.assert_called_once_with(f"{cli.API_BASE}/external",
+                                          params={"barcode": "3017620422003"})
+
+    @patch("cli.requests.post")
+    def test_find_with_add_flag_calls_post(self, mock_post):
+        mock_post.return_value = _mock_response(201, {
+            "id": 1, "product_name": "Nutella", "quantity": 5, "price": 500,
+            "barcode": "3017620422003", "source": "openfoodfacts",
+        })
+        args = argparse.Namespace(barcode="3017620422003", name=None, add=True,
+                                   quantity=5, price=500)
+        cli.cmd_find(args)
+
+        mock_post.assert_called_once()
+        _, kwargs = mock_post.call_args
+        self.assertEqual(kwargs["json"]["barcode"], "3017620422003")
+        self.assertEqual(kwargs["json"]["quantity"], 5)
+
+    def test_find_without_barcode_or_name_does_nothing(self):
+        args = argparse.Namespace(barcode=None, name=None, add=False, quantity=0, price=0.0)
+        # should just print a message and return, no network call attempted
+        cli.cmd_find(args)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -29,6 +29,39 @@ class ApiEndpointTestCase(unittest.TestCase):
     def test_create_item_requires_product_name(self):
         resp = self.client.post("/inventory", json={"quantity": 5})
         self.assertEqual(resp.status_code, 400)
+  
+    #GET
+    def test_get_all_items(self):
+        self._create_sample_item()
+        self._create_sample_item()
+        resp = self.client.get("/inventory")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.get_json()), 2)
 
-        
+    def test_get_all_items_empty(self):
+        resp = self.client.get("/inventory")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.get_json(), [])
+
+    def test_get_single_item(self):
+        created = self._create_sample_item().get_json()
+        resp = self.client.get(f"/inventory/{created['id']}")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.get_json()["product_name"], "Widget")
+
+    def test_get_missing_item_returns_404(self):
+        resp = self.client.get("/inventory/999")
+        self.assertEqual(resp.status_code, 404)
+
+
+    def test_search_items_by_name(self):
+        self._create_sample_item()
+        resp = self.client.get("/inventory/search", query_string={"name": "wid"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.get_json()), 1)
+
+    def test_search_requires_name_param(self):
+        resp = self.client.get("/inventory/search")
+        self.assertEqual(resp.status_code, 400)
+
        

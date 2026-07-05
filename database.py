@@ -1,3 +1,7 @@
+inventory: list = []
+_next_id: int = 1
+
+
 def _reset():
     """Test helper: wipe the array and reset the id counter."""
     global inventory, _next_id

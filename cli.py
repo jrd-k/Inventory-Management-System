@@ -20,3 +20,19 @@ def _handle_connection_error(func):
             sys.exit(1)
     return wrapper
 
+
+@_handle_connection_error
+def cmd_add(args):
+    payload = {
+        "product_name": args.name,
+        "quantity": args.quantity,
+        "price": args.price,
+        "brands": args.brand,
+        "barcode": args.barcode,
+    }
+    resp = requests.post(API_BASE, json=payload)
+    if resp.status_code != 201:
+        print(f"Error: {resp.json()}")
+        return
+    print("Added:")
+    _print_item(resp.json())

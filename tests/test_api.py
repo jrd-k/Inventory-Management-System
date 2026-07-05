@@ -76,3 +76,18 @@ class ApiEndpointTestCase(unittest.TestCase):
     def test_update_missing_item_returns_404(self):
         resp = self.client.patch("/inventory/999", json={"quantity": 5})
         self.assertEqual(resp.status_code, 404)
+    def test_delete_item(self):
+        created = self._create_sample_item().get_json()
+        resp = self.client.delete(f"/inventory/{created['id']}")
+        self.assertEqual(resp.status_code, 200)
+
+        follow_up = self.client.get(f"/inventory/{created['id']}")
+        self.assertEqual(follow_up.status_code, 404)
+
+    def test_delete_missing_item_returns_404(self):
+        resp = self.client.delete("/inventory/999")
+        self.assertEqual(resp.status_code, 404)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -77,3 +77,10 @@ class CliUpdateTestCase(unittest.TestCase):
         cli.cmd_update(args)
         mock_patch.assert_not_called()
 
+class CliDeleteTestCase(unittest.TestCase):
+    @patch("cli.requests.delete")
+    def test_delete_item(self, mock_delete):
+        mock_delete.return_value = _mock_response(200, {"message": "Item 1 deleted"})
+        args = argparse.Namespace(id=1)
+        cli.cmd_delete(args)
+        mock_delete.assert_called_once_with(f"{cli.API_BASE}/1")

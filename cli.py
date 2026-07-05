@@ -93,3 +93,15 @@ def cmd_update(args):
     resp.raise_for_status()
     print("Updated:")
     _print_item(resp.json())
+
+
+
+@_handle_connection_error
+def cmd_delete(args):
+    resp = requests.delete(f"{API_BASE}/{args.id}")
+    if resp.status_code == 404:
+        print(f"Item {args.id} not found.")
+        return
+    resp.raise_for_status()
+    print(resp.json()["message"])
+
